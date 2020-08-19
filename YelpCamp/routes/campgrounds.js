@@ -21,13 +21,14 @@ router.get("/",function(req,res){
 router.post("/",middleware.isLoggedIn,function(req,res){
 	//get data from form and add to campgrounds arry
 	let name =req.body.name
+	let price = req.body.price
 	let image = req.body.image
 	let desc = req.body.description
 	let author={
 		id:req.user._id,
 		username:req.user.username
 	}
-	let newCampground = {name:name , image:image, description:desc, author:author}
+	let newCampground = {name:name ,price:price, image:image, description:desc, author:author, }
 	
 	//Create a new campground and save tp DB
 	Campground.create(newCampground, function(err,newlyCreated){
@@ -52,8 +53,9 @@ router.get("/new",middleware.isLoggedIn, function(req, res){
 router.get("/:id", function(req, res){
 	//Find campgrounds with provided ID
 	Campground.findById(req.params.id).populate("comments").exec(function(err, foundCampground){
-		if(err){
-			console.log(err)
+		if(err||!foundCampground){
+			req.flash("error","Campground not found");
+			res.redirect("back")
 		}else{
 			//render show templeate with that campground
 			res.render("campgrounds/show",{campground: foundCampground})
